@@ -1,0 +1,11 @@
+//
+// Created by LaoZhu on 2022/8/20.
+//
+
+#ifndef CH32V307VC_USER_CONFIG_H_
+#define CH32V307VC_USER_CONFIG_H_
+
+#define FREERTOS_HEAP_SIZE          16 * 1024
+#define PRINT_DEBUG_INFORMATION     1
+
+#endif //CH32V307VC_USER_CONFIG_H_
