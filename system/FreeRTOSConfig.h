@@ -10,7 +10,7 @@
 
 #define configUSE_CPU_USAGE_CALCULATE       1
 #ifdef configUSE_CPU_USAGE_CALCULATE
-#define configCPU_USAGE_CALC_PERIOD         500
+#define configCPU_USAGE_CALC_PERIOD         1000
 #endif
 
 #define configUSE_PREEMPTION                1

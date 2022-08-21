@@ -398,8 +398,7 @@ PRIVILEGED_DATA static volatile UBaseType_t uxSchedulerSuspended = ( UBaseType_t
 
 #if(configUSE_CPU_USAGE_CALCULATE == 1)
 PRIVILEGED_DATA static unsigned long cpu_usage_max_idle_cnt = 0;
-PRIVILEGED_DATA static unsigned short cpu_usage_idle_cntl = 0;
-PRIVILEGED_DATA static unsigned long cpu_usage_idle_cnth = 0;
+PRIVILEGED_DATA static unsigned short cpu_usage_idle_counter = 0;
 PRIVILEGED_DATA static unsigned short cpu_usage_tick_counter = 0;
 PRIVILEGED_DATA static unsigned short cpu_usage_value = 0;
 #endif
@@ -2913,9 +2912,8 @@ BaseType_t xTaskIncrementTick( void )
 #if(configUSE_CPU_USAGE_CALCULATE == 1)
     cpu_usage_tick_counter++;
     if(cpu_usage_tick_counter >= configCPU_USAGE_CALC_PERIOD) {
-        cpu_usage_value = 10000 - cpu_usage_idle_cnth * 10000 / cpu_usage_max_idle_cnt;
-        cpu_usage_idle_cntl = 0;
-        cpu_usage_idle_cnth = 0;
+        cpu_usage_value = 10000 - cpu_usage_idle_counter * 10000 / cpu_usage_max_idle_cnt;
+        cpu_usage_idle_counter = 0;
         cpu_usage_tick_counter = 0;
     }
 #endif
@@ -3456,6 +3454,7 @@ void vTaskMissedYield( void )
  * void prvIdleTask( void *pvParameters );
  *
  */
+static volatile unsigned short delay_counter = 0xff;
 static portTASK_FUNCTION( prvIdleTask, pvParameters )
 {
     /* Stop warnings. */
@@ -3571,11 +3570,9 @@ static portTASK_FUNCTION( prvIdleTask, pvParameters )
         #endif /* configUSE_TICKLESS_IDLE */
 
 #if (configUSE_CPU_USAGE_CALCULATE == 1)
-        cpu_usage_idle_cntl++;
-        if(cpu_usage_idle_cntl >= 100) {
-            cpu_usage_idle_cntl = 0;
-            cpu_usage_idle_cnth++;
-        }
+        delay_counter = 0xff;
+        while (delay_counter--);
+        cpu_usage_idle_counter++;
 #endif
     }
 }
@@ -5454,15 +5451,14 @@ void vTaskCPUUsageInit(void) {
     vTaskDelay(2);//synchronizewithclocktick
     taskENTER_CRITICAL();
     cpu_usage_max_idle_cnt = 0;
-    cpu_usage_idle_cntl = 0;
-    cpu_usage_idle_cnth = 0;
+    cpu_usage_idle_counter = 0;
     cpu_usage_tick_counter = 0;
     taskEXIT_CRITICAL();
 
     vTaskDelay(configCPU_USAGE_CALC_PERIOD * 4 / 5);
 
     taskENTER_CRITICAL();
-    cpu_usage_max_idle_cnt = cpu_usage_idle_cnth * 5 / 4;
+    cpu_usage_max_idle_cnt = cpu_usage_idle_counter * 5 / 4;
     taskEXIT_CRITICAL();
 }
 unsigned short uTaskGetCPUUsage(void) {
