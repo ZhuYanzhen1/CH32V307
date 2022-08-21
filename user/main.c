@@ -5,7 +5,7 @@ TaskHandle_t task1_handler;
 void task1(void *pvParameters) {
     (void) pvParameters;
     while (1) {
-        printf("CPU Usage: %f%%\r\n", (float) uTaskGetCPUUsage() / 100.0f);
+        printf("CPU Usage: %.2f%%\r\n", (float) uTaskGetCPUUsage() / 100.0f);
         delayms(1000);
     }
 }

@@ -35,22 +35,31 @@ int main(void) {
     while (1);
 }
 
-static uint8_t factor_us = 0;
 void system_config(uint32_t baudrate) {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-    factor_us = SystemCoreClock / 8000000;
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
+    unsigned short tmpcr1 = TIM6->CTLR1;
+    tmpcr1 &= (uint16_t) (~((uint16_t) TIM_CTLR1_CKD));
+    tmpcr1 |= (uint32_t) TIM_CKD_DIV1;
+    TIM6->CTLR1 = tmpcr1 | 0x80;
+    TIM6->ATRLR = 0xffff;
+    TIM6->PSC = 0;
+    TIM6->DMAINTENR |= TIM_IT_Update;
+    TIM6->SWEVGR = TIM_PSCReloadMode_Immediate;
     usart1_config(baudrate);
     print_system_information();
 }
 
 void delayus(uint32_t xus) {
-    uint32_t i;
-    SysTick->SR &= ~(1 << 0);
-    i = (uint32_t)xus * factor_us;
-    SysTick->CMP = i;
-    SysTick->CTLR |= (1 << 4) | (1 << 5) | (1 << 0);
-    while((SysTick->SR & (1 << 0)) != (1 << 0));
-    SysTick->CTLR &= ~(1 << 0);
+    TIM6->CNT = 0;
+    TIM6->SWEVGR = TIM_PSCReloadMode_Immediate;
+    TIM6->CTLR1 |= TIM_CEN;
+    for (unsigned int counter = 0; counter < xus; ++counter) {
+        while (TIM6->CNT <= (144 - 1));
+        TIM6->CNT = 0;
+        TIM6->SWEVGR = TIM_PSCReloadMode_Immediate;
+    }
+    TIM6->CTLR1 &= (uint16_t) (~((uint16_t) TIM_CEN));
 }
 
 extern UBaseType_t uxCriticalNesting;
