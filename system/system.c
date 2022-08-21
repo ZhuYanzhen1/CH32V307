@@ -83,9 +83,29 @@ void usart1_config(uint32_t baudrate) {
     USART_Cmd(USART1, ENABLE);
 }
 
-void _putchar(char character){
-    while(USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);
-    USART_SendData(USART1, character);
+static const char hex_to_str_table[] = "0123456789ABCDEF";
+void printk_int(const char *str, unsigned int value) {
+    while (1) {
+        if (*str != '\0') {
+            while ((USART1->STATR & USART_FLAG_TC) == RESET);
+            USART1->DATAR = (*str & (uint16_t) 0x01FF);
+            str++;
+        } else
+            break;
+    }
+    while ((USART1->STATR & USART_FLAG_TC) == RESET);
+    USART1->DATAR = ('0' & (uint16_t) 0x01FF);
+    while ((USART1->STATR & USART_FLAG_TC) == RESET);
+    USART1->DATAR = ('x' & (uint16_t) 0x01FF);
+    for (unsigned char counter = 0; counter < 8; ++counter) {
+        while ((USART1->STATR & USART_FLAG_TC) == RESET);
+        USART1->DATAR = (hex_to_str_table[(value >> (4 * counter)) & 0x0F] & (uint16_t) 0x01FF);
+    }
+}
+
+void _putchar(char character) {
+    while ((USART1->STATR & USART_FLAG_TC) == RESET);
+    USART1->DATAR = (character & (uint16_t) 0x01FF);
 }
 
 void *_sbrk(ptrdiff_t incr) {

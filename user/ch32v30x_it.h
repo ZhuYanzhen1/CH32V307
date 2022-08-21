@@ -12,7 +12,6 @@
 
 #include "system.h"
 
-
 #endif /* __CH32V30x_IT_H */
 
 

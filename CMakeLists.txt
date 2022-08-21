@@ -48,8 +48,7 @@ add_custom_target(download_program
         "program $<TARGET_FILE:${PROJECT_NAME}.elf>" -c wlink_reset_resume -c exit)
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf download_program PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/system/system.c
-        COMMENT "Building ${LIST_FILE}")
+        COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/system/system.c)
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
