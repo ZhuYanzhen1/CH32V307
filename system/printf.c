@@ -936,14 +936,14 @@ static int _vsnprintf(out_fct_type out, char *buffer, const size_t maxlen, const
 #include "semphr.h"
 SemaphoreHandle_t printf_semaphore = NULL;
 int printf_(const char *format, ...) {
-    if (printf_semaphore != NULL)
+    if (printf_semaphore != NULL && __get_MCAUSE() == 0x8000000e)
         xSemaphoreTake(printf_semaphore, 0xFFFFFFFFUL);
     va_list va;
     va_start(va, format);
     char buffer[1];
     const int ret = _vsnprintf(_out_char, buffer, (size_t) -1, format, va);
     va_end(va);
-    if (printf_semaphore != NULL)
+    if (printf_semaphore != NULL && __get_MCAUSE() == 0x8000000e)
         xSemaphoreGive(printf_semaphore);
     return ret;
 }

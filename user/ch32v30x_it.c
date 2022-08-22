@@ -9,9 +9,8 @@ __attribute__((unused)) void NMI_Handler(void) {
     __asm volatile ( "csrr %0," "mcause" : "=r" (mcause));
     __asm volatile ( "csrr %0," "mtval" : "=r" (mtval));
     __asm volatile ("csrw 0x800, %0" : : "r" (0x6000));
-    printk_int("\r\nHardFault_Handler\r\nmpec: ", mepc);
-    printk_int("  mcause: ", mcause);
-    printk_int("  mtval: ", mtval);
+    printf("\r\nRunning into HardFault_Handler\r\n");
+    printf("mpec: 0x%08X  mcause: 0x%08X  mtval: 0x%08X\r\n", mepc, mcause, mtval);
     while (1);
 }
 
@@ -21,8 +20,7 @@ __attribute__((unused)) void HardFault_Handler(void) {
     __asm volatile ( "csrr %0," "mcause" : "=r" (mcause));
     __asm volatile ( "csrr %0," "mtval" : "=r" (mtval));
     __asm volatile ("csrw 0x800, %0" : : "r" (0x6000));
-    printk_int("\r\nHardFault_Handler\r\nmpec: ", mepc);
-    printk_int("  mcause: ", mcause);
-    printk_int("  mtval: ", mtval);
+    printf("\r\nRunning into HardFault_Handler\r\n");
+    printf("mpec: 0x%08X  mcause: 0x%08X  mtval: 0x%08X\r\n", mepc, mcause, mtval);
     while (1);
 }

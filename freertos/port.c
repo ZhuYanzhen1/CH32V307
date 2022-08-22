@@ -154,15 +154,15 @@ task stack, not the ISR stack). */
 void vPortSetupTimerInterrupt( void )
 {
     /* set software is lowest priority */
-    NVIC_SetPriority(Software_IRQn,0xf0);
+    NVIC_SetPriority(Software_IRQn, 0xf0);
     /* set systick is lowest priority */
-    NVIC_SetPriority(SysTicK_IRQn,0xf0);
+    NVIC_SetPriority(SysTicK_IRQn, 0xf0);
 
-    SysTick->CTLR= 0;
-    SysTick->SR  = 0;
+    SysTick->CTLR = 0;
+    SysTick->SR = 0;
     SysTick->CNT = 0;
-    SysTick->CMP = configCPU_CLOCK_HZ/configTICK_RATE_HZ;
-    SysTick->CTLR= 0xf;
+    SysTick->CMP = configCPU_CLOCK_HZ / configTICK_RATE_HZ;
+    SysTick->CTLR = 0xf;
 }
 
 #endif /* ( configMTIME_BASE_ADDRESS != 0 ) && ( configMTIME_BASE_ADDRESS != 0 ) */
@@ -199,46 +199,45 @@ extern void xPortStartFirstTask( void );
 	configure whichever clock is to be used to generate the tick interrupt. */
 	vPortSetupTimerInterrupt();
 
-	#if( ( configMTIME_BASE_ADDRESS != 0 ) && ( configMTIMECMP_BASE_ADDRESS != 0 ) )
-	{
-		/* Enable mtime and external interrupts.  1<<7 for timer interrupt, 1<<11
-		for external interrupt.  _RB_ What happens here when mtime is not present as
-		with pulpino? */
-	    NVIC_EnableIRQ(SysTicK_IRQn);
-	    NVIC_EnableIRQ(Software_IRQn);
-	}
-	#else
-	{
-		/* Enable external interrupts,global interrupt is enabled at first task start. */
-	    NVIC_EnableIRQ(SysTicK_IRQn);
-	    NVIC_EnableIRQ(Software_IRQn);
-	}
-	#endif /* ( configMTIME_BASE_ADDRESS != 0 ) && ( configMTIMECMP_BASE_ADDRESS != 0 ) */
+#if((configMTIME_BASE_ADDRESS != 0) && (configMTIMECMP_BASE_ADDRESS != 0))
+    {
+        /* Enable mtime and external interrupts.  1<<7 for timer interrupt, 1<<11
+        for external interrupt.  _RB_ What happens here when mtime is not present as
+        with pulpino? */
+        NVIC_EnableIRQ(SysTicK_IRQn);
+        NVIC_EnableIRQ(Software_IRQn);
+    }
+#else
+    {
+        /* Enable external interrupts,global interrupt is enabled at first task start. */
+        NVIC_EnableIRQ(SysTicK_IRQn);
+        NVIC_EnableIRQ(Software_IRQn);
+    }
+#endif /* ( configMTIME_BASE_ADDRESS != 0 ) && ( configMTIMECMP_BASE_ADDRESS != 0 ) */
 
     /* Initialise the critical nesting count ready for the first task. */
     uxCriticalNesting = 0;
-	xPortStartFirstTask();
+    xPortStartFirstTask();
 
-	/* Should not get here as after calling xPortStartFirstTask() only tasks
-	should be executing. */
-	return pdFAIL;
+    /* Should not get here as after calling xPortStartFirstTask() only tasks
+    should be executing. */
+    return pdFAIL;
 }
 /*-----------------------------------------------------------*/
 
-void vPortEndScheduler( void )
-{
-	/* Not implemented. */
-	for( ;; );
+void vPortEndScheduler(void) {
+    /* Not implemented. */
+    for (;;);
 }
 /*-----------------------------------------------------------*/
 void SysTick_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
-void SysTick_Handler( void )
-{
+unsigned int global_system_time_stamp = 0;
+void SysTick_Handler(void) {
+    global_system_time_stamp++;
     GET_INT_SP();
     portDISABLE_INTERRUPTS();
     SysTick->SR = 0;
-    if( xTaskIncrementTick() != pdFALSE )
-    {
+    if (xTaskIncrementTick() != pdFALSE) {
         portYIELD();
     }
     portENABLE_INTERRUPTS();

@@ -7,6 +7,20 @@ const char compile_date_time[] = __TIMESTAMP__;
 
 static TaskHandle_t initialize_task_handler;
 
+static char stackoverflow_sprintf_buffer[64] = {0};
+static void usart1_sendstring(char *str) {
+    _putchar(*str);
+    while (*++str)
+        _putchar(*str);
+}
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+    sprintf(stackoverflow_sprintf_buffer, "%s task stack overflow\r\n", pcTaskName);
+    usart1_sendstring(stackoverflow_sprintf_buffer);
+    sprintf(stackoverflow_sprintf_buffer, "FreeRTOS free heap size: %dB\r\n", xPortGetFreeHeapSize());
+    usart1_sendstring(stackoverflow_sprintf_buffer);
+    while (1);
+}
+
 extern void user_hardware_initialize(void);
 extern void user_task_initialize(void);
 void initialize_task(void *pvParameters) {
@@ -92,26 +106,6 @@ void usart1_config(uint32_t baudrate) {
     USART_Cmd(USART1, ENABLE);
 }
 
-static const char hex_to_str_table[] = "0123456789ABCDEF";
-void printk_int(const char *str, unsigned int value) {
-    while (1) {
-        if (*str != '\0') {
-            while ((USART1->STATR & USART_FLAG_TC) == RESET);
-            USART1->DATAR = (*str & (uint16_t) 0x01FF);
-            str++;
-        } else
-            break;
-    }
-    while ((USART1->STATR & USART_FLAG_TC) == RESET);
-    USART1->DATAR = ('0' & (uint16_t) 0x01FF);
-    while ((USART1->STATR & USART_FLAG_TC) == RESET);
-    USART1->DATAR = ('x' & (uint16_t) 0x01FF);
-    for (unsigned char counter = 0; counter < 8; ++counter) {
-        while ((USART1->STATR & USART_FLAG_TC) == RESET);
-        USART1->DATAR = (hex_to_str_table[(value >> (4 * counter)) & 0x0F] & (uint16_t) 0x01FF);
-    }
-}
-
 void _putchar(char character) {
     while ((USART1->STATR & USART_FLAG_TC) == RESET);
     USART1->DATAR = (character & (uint16_t) 0x01FF);
@@ -128,16 +122,16 @@ void *_sbrk(ptrdiff_t incr) {
 }
 
 void print_system_information(void) {
-#if (PRINT_DEBUG_INFORMATION == 1)
-    printf("--------------------- System Information ---------------------\r\n\r\n");
+#if (PRINT_DEBUG_LEVEL != 0)
+    printf("--------------------- System Information ---------------------\r\n");
     unsigned int misa_value = __get_MISA();
     printf("Instruction set: RV32");
     for (unsigned char counter = 0; counter < 25; ++counter)
         if (((misa_value >> counter) & 0x00000001UL) == 1)
-            _putchar((char)(65 + counter));
+            _putchar((char) (65 + counter));
     printf("\r\nSystem clock frequency: %dMHz\r\n", (SystemCoreClock / 1000000));
     printf("FreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
-    printf("Firmware compiled in %s\r\n\r\n", compile_date_time);
+    printf("Firmware compiled in %s\r\n", compile_date_time);
     printf("-------------------------------------------------------------\r\n\r\n");
 #endif
 }

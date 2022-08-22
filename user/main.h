@@ -10,4 +10,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+////////////////////////// Hardware //////////////////////////
+#include "adc.h"
+
 #endif //CH32V307VC_USER_MAIN_H_
