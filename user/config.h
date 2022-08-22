@@ -5,6 +5,7 @@
 #ifndef CH32V307VC_USER_CONFIG_H_
 #define CH32V307VC_USER_CONFIG_H_
 
+#define DEBUG_SERIAL_BAUDRATE       115200
 #define FREERTOS_HEAP_SIZE          16 * 1024
 
 /* 0: don't print any debug info
