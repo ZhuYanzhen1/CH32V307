@@ -100,6 +100,7 @@ void *_sbrk(ptrdiff_t incr) {
 }
 
 void print_system_information(void) {
+    delayms(700);
     printf("\033c");
 #if (PRINT_DEBUG_LEVEL == 3)
     printf("%s--------------------- System Information ---------------------\r\n", LOG_COLOR_I);

@@ -19,14 +19,14 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 project(CH32V307VC C ASM)
 set(CMAKE_C_STANDARD 99)
 
-#add_compile_definitions(ARM_MATH_CM4;ARM_MATH_MATRIX_CHECK;ARM_MATH_ROUNDING)
+add_definitions(-DTOOLCHAIN_PATH="${COMPILER_DIR}" -DPROJECT_PATH="${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf")
 add_compile_options(-march=rv32imafcxw -mabi=ilp32f -msmall-data-limit=8 -mno-save-restore -fmessage-length=0)
 add_compile_options(-fsigned-char -ffunction-sections -fdata-sections -fsingle-precision-constant -Wunused -Wuninitialized)
 add_compile_options($<$<COMPILE_LANGUAGE:ASM>:-x$<SEMICOLON>assembler-with-cpp>)
 add_compile_options(-O2 -g)
 
 add_link_options(-nostartfiles -Xlinker --gc-sections -Wl,--print-memory-usage,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
-add_link_options(--specs=nano.specs --specs=nosys.specs -march=rv32imafcxw -mabi=ilp32f)
+add_link_options(--specs=nano.specs --specs=nosys.specs -march=rv32imafcxw -mabi=ilp32f -flto)
 
 include_directories(system user library/inc freertos hardware)
 file(GLOB_RECURSE SOURCES "system/startup_ch32v30x.s" "system/*.c" "library/src/*.c" "user/*.c" "freertos/*.c"
@@ -45,7 +45,8 @@ target_link_libraries(${PROJECT_NAME}.elf m)
 add_custom_target(download_program
         COMMAND E:/Desktop/Files/AutoInstall/pack/openocd/bin/openocd.exe -f ${CMAKE_CURRENT_SOURCE_DIR}/wch-riscv.cfg
         -c "tcl_port disabled" -c "gdb_port disabled" -c "tcl_port disabled" -c init -c halt -c
-        "program $<TARGET_FILE:${PROJECT_NAME}.elf>" -c wlink_reset_resume -c exit)
+        "program $<TARGET_FILE:${PROJECT_NAME}.elf>" -c wlink_reset_resume -c exit
+        COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/open_putty.bat COM9 115200)
 
 add_custom_command(TARGET ${PROJECT_NAME}.elf download_program PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/system/system.c)

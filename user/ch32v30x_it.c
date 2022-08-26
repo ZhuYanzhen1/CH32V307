@@ -1,4 +1,6 @@
 #include "ch32v30x_it.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 __attribute__((unused)) void NMI_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 __attribute__((unused)) void HardFault_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
@@ -23,6 +25,8 @@ __attribute__((unused)) void HardFault_Handler(void) {
     __asm volatile ("csrw 0x800, %0" : : "r" (0x6000));
     printf("\r\n");
     PRINTF_LOGE("Running into HardFault Handler\r\n");
-    PRINTF_LOGE("mpec: 0x%08X  mcause: 0x%08X  mtval: 0x%08X\r\n", mepc, mcause, mtval);
+    PRINTF_LOGE("mpec: 0x%08X  mcause: 0x%08X  mtval: 0x%08X\r\n\r\n", mepc, mcause, mtval);
+    PRINTF_LOGE("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc);
+    PRINTF_LOGE("Running in %s\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
     while (1);
 }
