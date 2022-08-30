@@ -5,9 +5,20 @@ TaskHandle_t task1_handler;
 void task1(void *pvParameters) {
     (void) pvParameters;
     while (1) {
+        calendar_t calendar;
+        rtc_get_time(&calendar);
         PRINTF_LOGI("CPU Usage: %.2f%%    CPU Temperature: %dC\r\n",
-                    (float) uTaskGetCPUUsage() / 100.0f, TempSensor_Volt_To_Temper(adc1_get_value(1) * 3300 / 4096));
+                    (float) uTaskGetCPUUsage() / 100.0f, TempSensor_Volt_To_Temper(adc1_get_value(1) * 3300 / 4096))
+        PRINTF_LOGI("Get random number: 0x%x\r\n", RNG_GetRandomNumber())
+        PRINTF_LOGI("Date Time: %d-%02d-%02d  %02d:%02d:%02d\r\n\r\n", calendar.year, calendar.month, calendar.date,
+                    calendar.hour, calendar.min, calendar.sec)
         delayms(1000);
+
+        /* Used to trigger hardware errors to test if hardware error tracking is working */
+        static const uint32_t s_keys[32];
+        uint32_t value =
+            s_keys[((global_system_time_stamp % 10 + 1) & 0x0000001F)] ^ (*(uint32_t *) global_system_time_stamp);
+        PRINTF_LOGI("value: %d\r\n", value)
     }
 }
 
@@ -18,11 +29,12 @@ void user_task_initialize(void) {
                     (void *) NULL,
                     (UBaseType_t) 1,
                     (TaskHandle_t *) &task1_handler) != pdPASS) {
-        ASSERT_FAILED();
+        ASSERT_FAILED()
     }
 }
 
 void user_hardware_initialize(void) {
+    rtc_config();
     adc1_config();
     adc1_dma1_config();
     adc1_channel_config();

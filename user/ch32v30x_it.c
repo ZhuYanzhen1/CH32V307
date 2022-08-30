@@ -12,3 +12,12 @@ __attribute__((unused)) void USART1_IRQHandler(void) {
         USART1->DATAR = (USART_ReceiveData(USART1) & (uint16_t) 0x01FF);
     }
 }
+
+__attribute__((unused)) void RTC_IRQHandler(void) {
+    if (RTC_GetITStatus(RTC_IT_ALR) != RESET) {
+        RTC_ClearITPendingBit(RTC_IT_ALR);
+        RTC_ITConfig(RTC_IT_ALR, DISABLE);
+        PRINTF_LOGI("Alarm time has reached!\r\n")
+    }
+    RTC_WaitForLastTask();
+}

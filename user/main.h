@@ -12,5 +12,7 @@
 
 ////////////////////////// Hardware //////////////////////////
 #include "adc.h"
+#include "usart.h"
+#include "rtc.h"
 
 #endif //CH32V307VC_USER_MAIN_H_
