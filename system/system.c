@@ -16,11 +16,44 @@ __attribute__((unused)) void HardFault_Handler(void) {
     __asm volatile ( "csrr %0," "mtval" : "=r" (mtval));
     __asm volatile ("csrw 0x800, %0" : : "r" (0x6000));
     printf("\r\n");
-    PRINTF_LOGE("Running into HardFault Handler\r\n");
-    PRINTF_LOGE("mpec: 0x%08X    mcause: 0x%08X    mtval: 0x%08X\r\n", mepc, mcause, mtval);
-    PRINTF_LOGE("Current Task: %s\r\n\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
-    PRINTF_LOGW("Run command to find error line:\r\n");
-    PRINTF_LOGW("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc);
+    PRINTF_LOGE("Running into HardFault Handler\r\n")
+    printf(LOG_COLOR_E);
+    printf("E(%d): Abnormality reason: ", global_system_time_stamp / 10);
+    if ((mcause & 0x80000000UL) != 0) {
+        printf("Unknown");
+    } else {
+        switch (mcause & 0x0000000FUL) {
+            case 0: printf("Instruction address misalignment%s\r\n", LOG_RESET_COLOR);
+                break;
+            case 1: printf("Fetch command access error%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("Address of memory access: 0x%08x\r\n", mtval)
+                break;
+            case 2: printf("Illegal instructions%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("Illegal instruction code: 0x%08x\r\n", mtval)
+                break;
+            case 3: printf("Breakpoints%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("PC Register value: 0x%08x\r\n", mtval)
+                break;
+            case 4: printf("Load instruction access address misalignment%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("Address of memory access: 0x%08x\r\n", mtval)
+                break;
+            case 5: printf("Load command access error%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("Address of memory access: 0x%08x\r\n", mtval)
+                break;
+            case 6: printf("Store/AMO instruction access address misalignment%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("Address of memory access: 0x%08x\r\n", mtval)
+                break;
+            case 7: printf("Store/AMO command access error%s\r\n", LOG_RESET_COLOR);
+                PRINTF_LOGE("Address of memory access: 0x%08x\r\n", mtval)
+                break;
+            default: printf("Unknown%s\r\n", LOG_RESET_COLOR);
+                break;
+        }
+    }
+    PRINTF_LOGE("Current Task: %s, dumping register data\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()))
+    PRINTF_LOGE("mpec: 0x%08X    mcause: 0x%08X    mtval: 0x%08X\r\n\r\n", mepc, mcause, mtval)
+    PRINTF_LOGW("Run command to find error line:\r\n")
+    PRINTF_LOGW("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc)
     while (1);
 }
 
