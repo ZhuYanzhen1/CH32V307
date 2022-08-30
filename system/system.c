@@ -136,13 +136,13 @@ void print_system_information(void) {
     delayms(700);
     printf("\033c");
 #if (PRINT_DEBUG_LEVEL == 3)
-    printf("%s--------------------- System Information ---------------------\r\n", LOG_COLOR_I);
+    printf("%s------------------------- System Information -------------------------\r\n", LOG_COLOR_I);
     unsigned int misa_value = __get_MISA();
     printf("Instruction set: RV32");
     for (unsigned char counter = 0; counter < 25; ++counter)
         if (((misa_value >> counter) & 0x00000001UL) == 1)
             _putchar((char) (65 + counter));
-    printf("\r\nReset Reason: ");
+    printf("\tReset Reason: ");
     if (((rst_reason << 4) & 0x80000000UL) == 0) {
         for (unsigned char counter = 0; counter < 6; ++counter) {
             if (((rst_reason << counter) & 0x80000000UL) != 0) {
@@ -167,9 +167,10 @@ void print_system_information(void) {
     } else
         printf("Power-on reset");
     RCC->RSTSCKR = RCC->RSTSCKR | 0x01000000UL;
-    printf("\r\nSystem clock frequency: %dMHz\r\n", (SystemCoreClock / 1000000));
-    printf("FreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
-    printf("Firmware compiled in %s\r\n", compile_date_time);
-    printf("-------------------------------------------------------------%s\r\n\r\n", LOG_RESET_COLOR);
+    printf("\r\nSystem clock frequency: %dMHz", (SystemCoreClock / 1000000));
+    printf("\tFreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
+    printf("Program git version: %s", GIT_HASH);
+    printf("\tCompiled time: %s\r\n", compile_date_time);
+    printf("---------------------------------------------------------------------%s\r\n\r\n", LOG_RESET_COLOR);
 #endif
 }

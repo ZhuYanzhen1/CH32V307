@@ -4,6 +4,7 @@
 #include "printf.h"
 #include "ch32v30x.h"
 #include "config.h"
+#include "gitver.h"
 
 #define LOG_COLOR_RED     "31"
 #define LOG_COLOR_GREEN   "32"
