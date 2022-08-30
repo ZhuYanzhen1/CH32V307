@@ -26,6 +26,7 @@
 #include "ch32v30x_pwr.h"
 #include "ch32v30x_rcc.h"
 #include "ch32v30x_rtc.h"
+#include "ch32v30x_rng.h"
 #include "ch32v30x_sdio.h"
 #include "ch32v30x_spi.h"
 #include "ch32v30x_tim.h"

@@ -24,6 +24,17 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
     while (1);
 }
 
+static void system_rng_bkp_config() {
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_RNG, ENABLE);
+    RNG_Cmd(ENABLE);
+    while (RNG_GetFlagStatus(RNG_FLAG_DRDY) == RESET);
+
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+    BKP_TamperPinCmd(DISABLE);
+    PWR_BackupAccessCmd(ENABLE);
+    BKP_ClearFlag();
+}
+
 extern void user_hardware_initialize(void);
 extern void user_task_initialize(void);
 void initialize_task(void *pvParameters) {
@@ -33,6 +44,7 @@ void initialize_task(void *pvParameters) {
     vTaskCPUUsageInit();
 #endif
     taskENTER_CRITICAL();
+    system_rng_bkp_config();
     user_hardware_initialize();
     taskEXIT_CRITICAL();
     printf_semaphore = xSemaphoreCreateMutex();
@@ -41,8 +53,7 @@ void initialize_task(void *pvParameters) {
 }
 
 void print_system_information(void);
-int main(void) {
-    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+static void system_timer6_config() {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6, ENABLE);
     unsigned short tmpcr1 = TIM6->CTLR1;
     tmpcr1 &= (uint16_t) (~((uint16_t) TIM_CTLR1_CKD));
@@ -52,6 +63,11 @@ int main(void) {
     TIM6->PSC = 0;
     TIM6->DMAINTENR |= TIM_IT_Update;
     TIM6->SWEVGR = TIM_PSCReloadMode_Immediate;
+}
+
+int main(void) {
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+    system_timer6_config();
     usart1_config(DEBUG_SERIAL_BAUDRATE);
     print_system_information();
     xTaskCreate((TaskFunction_t) initialize_task,
@@ -100,6 +116,7 @@ void *_sbrk(ptrdiff_t incr) {
 }
 
 void print_system_information(void) {
+    unsigned int rst_reason = RCC->RSTSCKR;
     delayms(700);
     printf("\033c");
 #if (PRINT_DEBUG_LEVEL == 3)
@@ -109,6 +126,31 @@ void print_system_information(void) {
     for (unsigned char counter = 0; counter < 25; ++counter)
         if (((misa_value >> counter) & 0x00000001UL) == 1)
             _putchar((char) (65 + counter));
+    printf("\r\nReset Reason: ");
+    if (((rst_reason << 4) & 0x80000000UL) == 0) {
+        for (unsigned char counter = 0; counter < 6; ++counter) {
+            if (((rst_reason << counter) & 0x80000000UL) != 0) {
+                switch (counter) {
+                    case 0:printf("Low power reset");
+                        break;
+                    case 1:printf("Window watchdog reset");
+                        break;
+                    case 2:printf("Independent watchdog reset");
+                        break;
+                    case 3:printf("Software reset");
+                        break;
+                    case 4:printf("Power-on reset");
+                        break;
+                    case 5:printf("External reset");
+                        break;
+                    default:printf("Unknown reset");
+                        break;
+                }
+            }
+        }
+    } else
+        printf("Power-on reset");
+    RCC->RSTSCKR = RCC->RSTSCKR | 0x01000000UL;
     printf("\r\nSystem clock frequency: %dMHz\r\n", (SystemCoreClock / 1000000));
     printf("FreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
     printf("Firmware compiled in %s\r\n", compile_date_time);
