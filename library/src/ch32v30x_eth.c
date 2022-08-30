@@ -9,6 +9,7 @@
 *******************************************************************************/
 #include "ch32v30x_eth.h"
 #include "ch32v30x_rcc.h"
+#include "system.h"
 
 ETH_DMADESCTypeDef *DMATxDescToSet;
 ETH_DMADESCTypeDef *DMARxDescToGet;
@@ -1274,18 +1275,14 @@ void ETH_SoftwareReset(void)
  *
  * @return  The new state of DMA Bus Mode register SR bit (SET or RESET).
  */
-FlagStatus ETH_GetSoftwareResetStatus(void)
-{
+FlagStatus ETH_GetSoftwareResetStatus(void) {
     FlagStatus bitstatus = RESET;
-    if((ETH->DMABMR & ETH_DMABMR_SR) != (uint32_t)RESET)
-    {
+    if ((ETH->DMABMR & ETH_DMABMR_SR) != (uint32_t) RESET) {
         bitstatus = SET;
-    }
-    else
-    {
+    } else {
         bitstatus = RESET;
     }
-    printf("ETH->DMABMR is:%08x\n", ETH->DMABMR);
+    PRINTF_LOGI("ETH->DMABMR is:%08x\n", ETH->DMABMR);
 
     return bitstatus;
 }
@@ -1432,7 +1429,7 @@ ITStatus ETH_GetDMAITStatus(uint32_t ETH_DMA_IT)
 /*********************************************************************
  * @fn      ETH_DMAClearITPendingBit
  *
- * @brief   Clears the ETHERNET’s DMA IT pending bit.
+ * @brief   Clears the ETHERNETï¿½s DMA IT pending bit.
  *
  * @param   ETH_DMA_IT - specifies the interrupt pending bit to clear.
  *            ETH_DMA_IT_NIS - Normal interrupt summary

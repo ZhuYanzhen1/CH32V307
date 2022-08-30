@@ -8,6 +8,22 @@ const char compile_date_time[] = __TIMESTAMP__;
 
 static TaskHandle_t initialize_task_handler;
 
+__attribute__((unused)) void HardFault_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+__attribute__((unused)) void HardFault_Handler(void) {
+    unsigned int mepc, mcause, mtval;
+    __asm volatile ( "csrr %0," "mepc" : "=r" (mepc));
+    __asm volatile ( "csrr %0," "mcause" : "=r" (mcause));
+    __asm volatile ( "csrr %0," "mtval" : "=r" (mtval));
+    __asm volatile ("csrw 0x800, %0" : : "r" (0x6000));
+    printf("\r\n");
+    PRINTF_LOGE("Running into HardFault Handler\r\n");
+    PRINTF_LOGE("mpec: 0x%08X    mcause: 0x%08X    mtval: 0x%08X\r\n", mepc, mcause, mtval);
+    PRINTF_LOGE("Current Task: %s\r\n\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()));
+    PRINTF_LOGW("Run command to find error line:\r\n");
+    PRINTF_LOGW("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc);
+    while (1);
+}
+
 static char stackoverflow_sprintf_buffer[64] = {0};
 static void usart1_sendstring(char *str) {
     _putchar(*str);
