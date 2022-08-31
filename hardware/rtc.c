@@ -156,10 +156,7 @@ void rtc_get_time(calendar_t *calendar) {
 
 void rtc_config(void) {
     unsigned char temp = 0;
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
-    PWR_BackupAccessCmd(ENABLE);
-
-    if (BKP_ReadBackupRegister(BKP_DR1) != 0xA5A5) {
+    if ((BKP_ReadBackupRegister(BKP_DR1) & 0xFF00) != 0xA500) {
         PRINTF_LOGI("Backup region power down, reconfigure RCC\r\n")
         BKP_DeInit();
         RCC_LSEConfig(RCC_LSE_ON);
@@ -181,7 +178,7 @@ void rtc_config(void) {
         RTC_WaitForLastTask();
         rtc_set_time(2022, 9, 1, 0, 0, 0);
         RTC_ExitConfigMode();
-        BKP_WriteBackupRegister(BKP_DR1, 0XA5A5);
+        BKP_WriteBackupRegister(BKP_DR1, (0XA500 | (BKP_ReadBackupRegister(BKP_DR1) & 0x00FF)));
     } else {
         RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
         PWR_WakeUpPinCmd(DISABLE);

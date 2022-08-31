@@ -53,9 +53,10 @@ __attribute__((unused)) void HardFault_Handler(void) {
     }
     PRINTF_LOGE("Current Task: %s, dumping register data\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()))
     PRINTF_LOGE("mpec: 0x%08X    mcause: 0x%08X    mtval: 0x%08X\r\n\r\n", mepc, mcause, mtval)
-    PRINTF_LOGW("Run command to find error line:\r\n")
-    PRINTF_LOGW("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc)
-    while (1);
+    PRINTF_LOGE("Run command to find error line:\r\n")
+    PRINTF_LOGE("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc)
+    while (1)
+        IWDG_ReloadCounter();
 }
 
 static char stackoverflow_sprintf_buffer[64] = {0};
@@ -90,17 +91,23 @@ static void iwdg_feed_timer_callback(TimerHandle_t xTimer) {
     IWDG_ReloadCounter();
 }
 static void create_iwdg_task(void) {
-    iwdg_feed_timer = xTimerCreate("IWDG_Feed", 2000, pdTRUE,
-                                   (void *) 0, iwdg_feed_timer_callback);
-    if (iwdg_feed_timer != NULL) {
-        if (xTimerStart(iwdg_feed_timer, 0x000000FFUL) != pdPASS) {
-            IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
-            IWDG_SetPrescaler(IWDG_Prescaler_32);
-            IWDG_SetReload(4000);
-            IWDG_ReloadCounter();
-            IWDG_Enable();
-        } else PRINTF_LOGW("IWDG timer start failed, disable IWDG\r\n")
-    } else PRINTF_LOGW("IWDG timer alloc memory failed, disable IWDG\r\n")
+    if ((BKP_ReadBackupRegister(BKP_DR1) & 0x00FF) <= 3) {
+        iwdg_feed_timer = xTimerCreate("IWDG_Feed", 2000, pdTRUE,
+                                       (void *) 0, iwdg_feed_timer_callback);
+        if (iwdg_feed_timer != NULL) {
+            if (xTimerStart(iwdg_feed_timer, 0x000000FFUL) == pdPASS) {
+                IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+                IWDG_SetPrescaler(IWDG_Prescaler_32);
+                IWDG_SetReload(4000);
+                IWDG_ReloadCounter();
+                IWDG_Enable();
+            } else PRINTF_LOGW("IWDG timer start failed, disable IWDG\r\n")
+        } else PRINTF_LOGW("IWDG timer alloc memory failed, disable IWDG\r\n")
+    } else {
+        PRINTF_LOGE("The watchdog has been reset more than three times in a row.\r\n")
+        PRINTF_LOGE("Please check the previously printed logs to troubleshoot error messages.\r\n")
+        while (1);
+    }
 }
 
 extern void user_hardware_initialize(void);
@@ -185,8 +192,12 @@ void *_sbrk(ptrdiff_t incr) {
 }
 
 void print_system_information(void) {
-    unsigned int rst_reason = RCC->RSTSCKR;
+    unsigned int rst_reason = RCC->RSTSCKR, flash_size = *((volatile unsigned int *) 0x1FFFF7E0UL);
+    unsigned int chip_uid1 = *((volatile unsigned int *) 0x1FFFF7E8UL);
+    unsigned int chip_uid2 = *((volatile unsigned int *) 0x1FFFF7ECUL);
     delayms(700);
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
+    PWR_BackupAccessCmd(ENABLE);
     printf("\033c");
 #if (PRINT_DEBUG_LEVEL == 3)
     printf("%s------------------------- System Information -------------------------\r\n", LOG_COLOR_I);
@@ -203,27 +214,35 @@ void print_system_information(void) {
                     case 0:printf("Low power reset");
                         break;
                     case 1:printf("Window watchdog reset");
+                        BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) + 1);
                         break;
                     case 2:printf("Independent watchdog reset");
+                        BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) + 1);
                         break;
                     case 3:printf("Software reset");
+                        BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) & 0xFF00);
                         break;
                     case 4:printf("Power-on reset");
                         break;
                     case 5:printf("External reset");
+                        BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) & 0xFF00);
                         break;
                     default:printf("Unknown reset");
                         break;
                 }
             }
         }
-    } else
+    } else {
         printf("Power-on reset");
+        BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) & 0xFF00);
+    }
     RCC->RSTSCKR = RCC->RSTSCKR | 0x01000000UL;
     printf("\r\nSystem clock frequency: %dMHz", (SystemCoreClock / 1000000));
     printf("\tFreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
     printf("Program git version: %s", GIT_HASH);
     printf("\tCompiled time: %s\r\n", compile_date_time);
+    printf("Chip flash size: %dKB", flash_size & 0x0000ffffUL);
+    printf("\t\tUnique ID: %08X%08X\r\n", chip_uid1, chip_uid2);
     printf("---------------------------------------------------------------------%s\r\n\r\n", LOG_RESET_COLOR);
 #endif
 }

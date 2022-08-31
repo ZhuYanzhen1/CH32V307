@@ -42,9 +42,8 @@
 /* Software timer definitions. */
 #define configUSE_TIMERS                    1
 #define configTIMER_TASK_PRIORITY           ( configMAX_PRIORITIES - 1 )
-#define configTIMER_QUEUE_LENGTH            4
+#define configTIMER_QUEUE_LENGTH            10
 #define configTIMER_TASK_STACK_DEPTH        ( configMINIMAL_STACK_SIZE )
-
 
 
 /* Set the following definitions to 1 to include the API function, or zero
@@ -65,12 +64,9 @@
 /* Normal assert() semantics without relying on the provision of an assert.h
    header file. */
 #if (PRINT_DEBUG_LEVEL != 0)
-#define configASSERT(x) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); printf("Error in file \"%s\" %d.\r\n", __FILE__, __LINE__); while(1); }
+#define configASSERT(x) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); PRINTF_LOGE("Kernel error in \"%s\" %d.\r\n", __FILE__, __LINE__); while(1); }
 #else
 #define configASSERT(x) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); while(1); }
 #endif
-
-/* Map to the platform printf function. */
-#define configPRINT_STRING(pcString)  printf( pcString )
 
 #endif /* FREERTOS_CONFIG_H */
