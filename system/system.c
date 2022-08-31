@@ -3,6 +3,7 @@
 #include "system.h"
 #include "semphr.h"
 #include "usart.h"
+#include "timers.h"
 
 const char compile_date_time[] = __TIMESTAMP__;
 
@@ -74,7 +75,7 @@ void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
 }
 
 static void system_rng_bkp_config() {
-    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_RNG, ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_RNG | RCC_AHBPeriph_CRC, ENABLE);
     RNG_Cmd(ENABLE);
     while (RNG_GetFlagStatus(RNG_FLAG_DRDY) == RESET);
 
@@ -82,6 +83,24 @@ static void system_rng_bkp_config() {
     BKP_TamperPinCmd(DISABLE);
     PWR_BackupAccessCmd(ENABLE);
     BKP_ClearFlag();
+}
+
+static TimerHandle_t iwdg_feed_timer;
+static void iwdg_feed_timer_callback(TimerHandle_t xTimer) {
+    IWDG_ReloadCounter();
+}
+static void create_iwdg_task(void) {
+    iwdg_feed_timer = xTimerCreate("IWDG_Feed", 2000, pdTRUE,
+                                   (void *) 0, iwdg_feed_timer_callback);
+    if (iwdg_feed_timer != NULL) {
+        if (xTimerStart(iwdg_feed_timer, 0x000000FFUL) != pdPASS) {
+            IWDG_WriteAccessCmd(IWDG_WriteAccess_Enable);
+            IWDG_SetPrescaler(IWDG_Prescaler_32);
+            IWDG_SetReload(4000);
+            IWDG_ReloadCounter();
+            IWDG_Enable();
+        } else PRINTF_LOGW("IWDG timer start failed, disable IWDG\r\n")
+    } else PRINTF_LOGW("IWDG timer alloc memory failed, disable IWDG\r\n")
 }
 
 extern void user_hardware_initialize(void);
@@ -98,6 +117,7 @@ void initialize_task(void *pvParameters) {
     taskEXIT_CRITICAL();
     printf_semaphore = xSemaphoreCreateMutex();
     user_task_initialize();
+    create_iwdg_task();
     vTaskDelete(NULL);
 }
 
