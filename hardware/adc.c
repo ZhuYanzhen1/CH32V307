@@ -38,7 +38,7 @@ void adc1_config(void) {
     adc1_calibration_val = Get_CalibrationValue(ADC1);
     ADC_BufferCmd(ADC1, ENABLE);
 
-    PRINTF_LOGI("ADC1 Calibrate Success, value: %d\r\n", adc1_calibration_val);
+    PRINTF_LOGI("ADC1 calibrate success, value: %d\r\n", adc1_calibration_val);
 
     ADC_TempSensorVrefintCmd(ENABLE);
 }

@@ -97,6 +97,6 @@ void at24c02_config(void) {
         printf("\r\n\r\n");
         printf(LOG_RESET_COLOR);
 #endif
-    } else PRINTF_LOGI("AT24C02 read write test success\r\n");
+    } else PRINTF_LOGI("AT24C02 read write test success\r\n")
     at24c02_write_bytes((256 - sizeof(at24c02_data)) / 2, at24c02_data, sizeof(at24c02_data));
 }
