@@ -6,7 +6,7 @@
 #include "system.h"
 
 static short adc1_calibration_val = 0;
-static unsigned short adc1_dma_buffer[10] = {0};
+static volatile unsigned short adc1_dma_buffer[10] = {0};
 
 unsigned short adc1_get_value(unsigned char index) {
     short cal_value = (short) (adc1_dma_buffer[index] + adc1_calibration_val);

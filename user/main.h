@@ -15,5 +15,9 @@
 #include "usart.h"
 #include "rtc.h"
 #include "gpio.h"
+#include "iic.h"
+
+////////////////////////// Device //////////////////////////
+#include "at24c02.h"
 
 #endif //CH32V307VC_USER_MAIN_H_

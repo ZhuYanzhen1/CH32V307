@@ -36,6 +36,7 @@ void user_task_initialize(void) {
 
 void user_hardware_initialize(void) {
     led_config();
+    iic2_config(400000, 0xA0);
     rtc_config();
     adc1_config();
     adc1_dma1_config();
