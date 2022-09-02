@@ -19,21 +19,21 @@
 #define PRINTF_LOGI(format, ...)    { printf(LOG_COLOR_I); printf("I(%d): ", global_system_time_stamp / 10); \
                                     printf(format, ##__VA_ARGS__); printf(LOG_RESET_COLOR); }
 #else
-#define PRINTF_LOGI(format, ...)
+#define PRINTF_LOGI(format, ...)    ;
 #endif
 #if PRINT_DEBUG_LEVEL >= 2
 #define PRINTF_LOGW(format, ...)    { printf(LOG_COLOR_W); printf("W(%d): ", global_system_time_stamp / 10); \
                                     printf(format, ##__VA_ARGS__); printf(LOG_RESET_COLOR); }
 #else
-#define PRINTF_LOGW(format, ...)
+#define PRINTF_LOGW(format, ...)    ;
 #endif
 #if PRINT_DEBUG_LEVEL >= 1
 #define PRINTF_LOGE(format, ...)    { printf(LOG_COLOR_E); printf("E(%d): ", global_system_time_stamp / 10); \
                                     printf(format, ##__VA_ARGS__); printf(LOG_RESET_COLOR); }
 #define ASSERT_FAILED()              { PRINTF_LOGE("Initialize or create failed in \"%s\" %d.\r\n", __FILE__, __LINE__); while (1); }
 #else
-#define PRINTF_LOGE(format, ...)
-#define ASSERT_FAILED()              while(1)
+#define PRINTF_LOGE(format, ...)    ;
+#define ASSERT_FAILED()             while(1);
 #endif
 
 extern const char compile_date_time[];

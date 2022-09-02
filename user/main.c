@@ -19,7 +19,7 @@ void task1(void *pvParameters) {
         static const uint32_t s_keys[32];
         uint32_t value =
             s_keys[((global_system_time_stamp % 10 + 1) & 0x0000001F)] ^ (*(uint32_t *) global_system_time_stamp);
-        PRINTF_LOGI("value: %d\r\n", value)
+        printf("value: %d\r\n", value);
     }
 }
 
@@ -30,13 +30,13 @@ void user_task_initialize(void) {
                     (void *) NULL,
                     (UBaseType_t) 1,
                     (TaskHandle_t *) &task1_handler) != pdPASS) {
-        ASSERT_FAILED()
+        ASSERT_FAILED();
     }
 }
 
 void user_hardware_initialize(void) {
     led_config();
-    iic2_config(400000, 0xA0);
+    at24c02_config();
     rtc_config();
     adc1_config();
     adc1_dma1_config();

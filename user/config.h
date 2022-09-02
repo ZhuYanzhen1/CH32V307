@@ -15,4 +15,6 @@
  * */
 #define PRINT_DEBUG_LEVEL           3
 
+#define STARTUP_CLEAR_SCREEN        1
+
 #endif //CH32V307VC_USER_CONFIG_H_

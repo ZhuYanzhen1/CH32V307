@@ -16,8 +16,11 @@ __attribute__((unused)) void HardFault_Handler(void) {
     __asm volatile ( "csrr %0," "mcause" : "=r" (mcause));
     __asm volatile ( "csrr %0," "mtval" : "=r" (mtval));
     __asm volatile ("csrw 0x800, %0" : : "r" (0x6000));
+#if (PRINT_DEBUG_LEVEL != 0)
     printf("\r\n");
+#endif
     PRINTF_LOGE("Running into HardFault Handler\r\n")
+#if (PRINT_DEBUG_LEVEL != 0)
     printf(LOG_COLOR_E);
     printf("E(%d): Abnormality reason: ", global_system_time_stamp / 10);
     if ((mcause & 0x80000000UL) != 0) {
@@ -51,6 +54,7 @@ __attribute__((unused)) void HardFault_Handler(void) {
                 break;
         }
     }
+#endif
     PRINTF_LOGE("Current Task: %s, dumping register data\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()))
     PRINTF_LOGE("mpec: 0x%08X    mcause: 0x%08X    mtval: 0x%08X\r\n\r\n", mepc, mcause, mtval)
     PRINTF_LOGE("Run command to find error line:\r\n")
@@ -59,19 +63,23 @@ __attribute__((unused)) void HardFault_Handler(void) {
         IWDG_ReloadCounter();
 }
 
+#if (PRINT_DEBUG_LEVEL != 0)
 static char stackoverflow_sprintf_buffer[64] = {0};
 static void usart1_sendstring(char *str) {
     _putchar(*str);
     while (*++str)
         _putchar(*str);
 }
+#endif
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName) {
+#if (PRINT_DEBUG_LEVEL != 0)
     sprintf(stackoverflow_sprintf_buffer, "%sE(%d): %s task stack overflow%s\r\n",
             LOG_COLOR_E, global_system_time_stamp / 10, pcTaskName, LOG_RESET_COLOR);
     usart1_sendstring(stackoverflow_sprintf_buffer);
     sprintf(stackoverflow_sprintf_buffer, "%sE(%d): FreeRTOS free heap size: %dB%s\r\n",
             LOG_COLOR_E, global_system_time_stamp / 10, xPortGetFreeHeapSize(), LOG_RESET_COLOR);
     usart1_sendstring(stackoverflow_sprintf_buffer);
+#endif
     while (1);
 }
 
@@ -192,13 +200,17 @@ void *_sbrk(ptrdiff_t incr) {
 }
 
 void print_system_information(void) {
+#if (PRINT_DEBUG_LEVEL == 3)
     unsigned int rst_reason = RCC->RSTSCKR, flash_size = *((volatile unsigned int *) 0x1FFFF7E0UL);
     unsigned int chip_uid1 = *((volatile unsigned int *) 0x1FFFF7E8UL);
     unsigned int chip_uid2 = *((volatile unsigned int *) 0x1FFFF7ECUL);
-    delayms(700);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
     PWR_BackupAccessCmd(ENABLE);
+#endif
+#if (STARTUP_CLEAR_SCREEN == 1)
+    delayms(700);
     printf("\033c");
+#endif
 #if (PRINT_DEBUG_LEVEL == 3)
     printf("%s------------------------- System Information -------------------------\r\n", LOG_COLOR_I);
     unsigned int misa_value = __get_MISA();
