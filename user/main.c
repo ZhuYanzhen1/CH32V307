@@ -37,6 +37,7 @@ void user_task_initialize(void) {
 void user_hardware_initialize(void) {
     led_config();
     at24c02_config();
+    w25qxx_config();
     rtc_config();
     adc1_config();
     adc1_dma1_config();
