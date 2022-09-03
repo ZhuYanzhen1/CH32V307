@@ -70,26 +70,26 @@ void at24c02_write_bytes(unsigned short addr, unsigned char *data, unsigned shor
     }
 }
 
-static unsigned char at24c02_data[32] = {0};
+static unsigned char at24c02_test_data[32] = {0};
 void at24c02_config(void) {
     int counter;
-    unsigned char tmp_buffer[sizeof(at24c02_data)] = {0};
-    for (counter = 0; counter < sizeof(at24c02_data); ++counter)
+    unsigned char tmp_buffer[sizeof(at24c02_test_data)] = {0};
+    for (counter = 0; counter < sizeof(at24c02_test_data); ++counter)
         tmp_buffer[counter] = counter;
     iic2_config(400000, 0xA0);
-    at24c02_read_bytes((256 - sizeof(at24c02_data)) / 2, at24c02_data, sizeof(at24c02_data));
-    at24c02_write_bytes((256 - sizeof(at24c02_data)) / 2, tmp_buffer, sizeof(at24c02_data));
-    for (counter = 0; counter < sizeof(at24c02_data); ++counter)
+    at24c02_read_bytes((256 - sizeof(at24c02_test_data)) / 2, at24c02_test_data, sizeof(at24c02_test_data));
+    at24c02_write_bytes((256 - sizeof(at24c02_test_data)) / 2, tmp_buffer, sizeof(at24c02_test_data));
+    for (counter = 0; counter < sizeof(at24c02_test_data); ++counter)
         tmp_buffer[counter] = 0;
-    at24c02_read_bytes((256 - sizeof(at24c02_data)) / 2, tmp_buffer, sizeof(at24c02_data));
-    for (counter = 0; counter < sizeof(at24c02_data); ++counter)
+    at24c02_read_bytes((256 - sizeof(at24c02_test_data)) / 2, tmp_buffer, sizeof(at24c02_test_data));
+    for (counter = 0; counter < sizeof(at24c02_test_data); ++counter)
         if (tmp_buffer[counter] != counter)
             break;
-    if (counter != sizeof(at24c02_data)) {
+    if (counter != sizeof(at24c02_test_data)) {
         PRINTF_LOGW("AT24C02 read write test failed, data:")
 #if PRINT_DEBUG_LEVEL >= 2
         printf(LOG_COLOR_W);
-        for (counter = 0; counter < sizeof(at24c02_data); ++counter) {
+        for (counter = 0; counter < sizeof(at24c02_test_data); ++counter) {
             if (counter % 8 == 0)
                 printf("\r\n\t");
             printf("0x%02x ", tmp_buffer[counter]);
@@ -97,6 +97,6 @@ void at24c02_config(void) {
         printf("\r\n\r\n");
         printf(LOG_RESET_COLOR);
 #endif
-    } else PRINTF_LOGI("AT24C02 read write test success\r\n")
-    at24c02_write_bytes((256 - sizeof(at24c02_data)) / 2, at24c02_data, sizeof(at24c02_data));
+    } else PRINTF_LOGI("AT24C02 configuration success, read write test success\r\n")
+    at24c02_write_bytes((256 - sizeof(at24c02_test_data)) / 2, at24c02_test_data, sizeof(at24c02_test_data));
 }

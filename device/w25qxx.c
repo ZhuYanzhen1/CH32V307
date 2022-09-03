@@ -171,11 +171,15 @@ void w25qxx_wakeup(void) {
     delayus(3);
 }
 
-static unsigned char w25qxx_data[32] = {0};
+unsigned int w25qxx_get_size(void) {
+    return (w25qxx_flash_size * 1024 * 1024) / 8;
+}
+
+static unsigned char w25qxx_test_data[32] = {0};
 void w25qxx_config(void) {
     int counter;
     unsigned short device_id;
-    unsigned char tmp_buffer[sizeof(w25qxx_data)] = {0};
+    unsigned char tmp_buffer[sizeof(w25qxx_test_data)] = {0};
     spi3_config();
     w25qxx_wakeup();
     device_id = w25qxx_read_id();
@@ -193,22 +197,22 @@ void w25qxx_config(void) {
         default:break;
     }
     if (w25qxx_flash_size != 0) {
-        for (counter = 0; counter < sizeof(w25qxx_data); ++counter)
+        for (counter = 0; counter < sizeof(w25qxx_test_data); ++counter)
             tmp_buffer[counter] = counter;
-        w25qxx_read_bytes((2048 - sizeof(w25qxx_data)) / 2, w25qxx_data, sizeof(w25qxx_data));
-        w25qxx_write_bytes((2048 - sizeof(w25qxx_data)) / 2, tmp_buffer, sizeof(w25qxx_data));
-        for (counter = 0; counter < sizeof(w25qxx_data); ++counter)
+        w25qxx_read_bytes((2048 - sizeof(w25qxx_test_data)) / 2, w25qxx_test_data, sizeof(w25qxx_test_data));
+        w25qxx_write_bytes((2048 - sizeof(w25qxx_test_data)) / 2, tmp_buffer, sizeof(w25qxx_test_data));
+        for (counter = 0; counter < sizeof(w25qxx_test_data); ++counter)
             tmp_buffer[counter] = 0;
-        w25qxx_read_bytes((2048 - sizeof(w25qxx_data)) / 2, tmp_buffer, sizeof(w25qxx_data));
-        for (counter = 0; counter < sizeof(w25qxx_data); ++counter)
+        w25qxx_read_bytes((2048 - sizeof(w25qxx_test_data)) / 2, tmp_buffer, sizeof(w25qxx_test_data));
+        for (counter = 0; counter < sizeof(w25qxx_test_data); ++counter)
             if (tmp_buffer[counter] != counter)
                 break;
-        w25qxx_write_bytes((2048 - sizeof(w25qxx_data)) / 2, w25qxx_data, sizeof(w25qxx_data));
-        if (counter != sizeof(w25qxx_data)) {
+        w25qxx_write_bytes((2048 - sizeof(w25qxx_test_data)) / 2, w25qxx_test_data, sizeof(w25qxx_test_data));
+        if (counter != sizeof(w25qxx_test_data)) {
             PRINTF_LOGW("W25Q%d read write test failed, data:", w25qxx_flash_size == 8 ? 80 : w25qxx_flash_size)
 #if PRINT_DEBUG_LEVEL >= 2
             printf(LOG_COLOR_W);
-            for (counter = 0; counter < sizeof(w25qxx_data); ++counter) {
+            for (counter = 0; counter < sizeof(w25qxx_test_data); ++counter) {
                 if (counter % 8 == 0)
                     printf("\r\n\t");
                 printf("0x%02x ", tmp_buffer[counter]);
@@ -217,6 +221,7 @@ void w25qxx_config(void) {
             printf(LOG_RESET_COLOR);
 #endif
             w25qxx_flash_size = 0;
-        } else PRINTF_LOGI("W25Q%d read write test success\r\n", w25qxx_flash_size == 8 ? 80 : w25qxx_flash_size)
+        } else PRINTF_LOGI("W25Q%d configuration success, read write test success\r\n",
+                           w25qxx_flash_size == 8 ? 80 : w25qxx_flash_size)
     } else PRINTF_LOGW("Unknown flash type, SPI flash configuration failed\r\n")
 }

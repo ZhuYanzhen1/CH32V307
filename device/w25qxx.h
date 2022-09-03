@@ -32,6 +32,7 @@ void w25qxx_wakeup(void);
 void w25qxx_enable_write(void);
 void w25qxx_disable_write(void);
 unsigned short w25qxx_read_id(void);
+unsigned int w25qxx_get_size(void);
 void w25qxx_config(void);
 
 #endif //CH32V307VC_DEVICE_W25QXX_H_

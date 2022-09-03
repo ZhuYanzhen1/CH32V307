@@ -1,9 +1,5 @@
-#include "FreeRTOS.h"
-#include "task.h"
 #include "system.h"
-#include "semphr.h"
-#include "usart.h"
-#include "timers.h"
+#include "main.h"
 
 const char compile_date_time[] = __TIMESTAMP__;
 
@@ -127,7 +123,22 @@ void initialize_task(void *pvParameters) {
     vTaskCPUUsageInit();
 #endif
     taskENTER_CRITICAL();
+#if (PRINT_DEBUG_LEVEL == 3)
+    printf("%s------------------------ System Configuration ------------------------%s\r\n",
+           LOG_COLOR_I,
+           LOG_RESET_COLOR);
+#endif
     system_rng_bkp_config();
+    led_config();
+    at24c02_config();
+    w25qxx_config();
+    rtc_config();
+    fs_config();
+#if (PRINT_DEBUG_LEVEL == 3)
+    printf("\r\n%s------------------------- User Configuration -------------------------%s\r\n",
+           LOG_COLOR_I,
+           LOG_RESET_COLOR);
+#endif
     user_hardware_initialize();
     taskEXIT_CRITICAL();
     printf_semaphore = xSemaphoreCreateMutex();
@@ -255,6 +266,6 @@ void print_system_information(void) {
     printf("\tCompiled time: %s\r\n", compile_date_time);
     printf("Chip flash size: %dKB", flash_size & 0x0000ffffUL);
     printf("\t\tUnique ID: %08X%08X\r\n", chip_uid1, chip_uid2);
-    printf("---------------------------------------------------------------------%s\r\n\r\n", LOG_RESET_COLOR);
+    printf("%s\r\n", LOG_RESET_COLOR);
 #endif
 }

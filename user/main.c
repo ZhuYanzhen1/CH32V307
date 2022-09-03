@@ -16,10 +16,10 @@ void task1(void *pvParameters) {
         LED_TOGGLE();
 
         /* Used to trigger hardware error to test if hardfault back tracking is working */
-        static const uint32_t s_keys[32];
-        uint32_t value =
-            s_keys[((global_system_time_stamp % 10 + 1) & 0x0000001F)] ^ (*(uint32_t *) global_system_time_stamp);
-        printf("value: %d\r\n", value);
+//        static const uint32_t s_keys[32];
+//        uint32_t value =
+//            s_keys[((global_system_time_stamp % 10 + 1) & 0x0000001F)] ^ (*(uint32_t *) global_system_time_stamp);
+//        printf("value: %d\r\n", value);
     }
 }
 
@@ -30,15 +30,11 @@ void user_task_initialize(void) {
                     (void *) NULL,
                     (UBaseType_t) 1,
                     (TaskHandle_t *) &task1_handler) != pdPASS) {
-        ASSERT_FAILED();
+        ASSERT_FAILED()
     }
 }
 
 void user_hardware_initialize(void) {
-    led_config();
-    at24c02_config();
-    w25qxx_config();
-    rtc_config();
     adc1_config();
     adc1_dma1_config();
     adc1_channel_config();
