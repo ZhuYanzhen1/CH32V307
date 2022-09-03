@@ -176,7 +176,8 @@ void rtc_config(void) {
         RTC_EnterConfigMode();
         RTC_SetPrescaler(32767);
         RTC_WaitForLastTask();
-        rtc_set_time(2022, 9, 1, 0, 0, 0);
+        rtc_set_time(RTC_SET_YEAR, RTC_SET_MONTH, RTC_SET_DAY,
+                     RTC_SET_HOUR, RTC_SET_MINUTE, RTC_SET_SECOND);
         RTC_ExitConfigMode();
         BKP_WriteBackupRegister(BKP_DR1, (0XA500 | (BKP_ReadBackupRegister(BKP_DR1) & 0x00FF)));
     } else {

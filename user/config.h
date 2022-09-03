@@ -17,4 +17,12 @@
 
 #define STARTUP_CLEAR_SCREEN        1
 
+/* RTC time if needed to initialize */
+#define RTC_SET_YEAR                2022
+#define RTC_SET_MONTH               9
+#define RTC_SET_DAY                 3
+#define RTC_SET_HOUR                12
+#define RTC_SET_MINUTE              0
+#define RTC_SET_SECOND              0
+
 #endif //CH32V307VC_USER_CONFIG_H_

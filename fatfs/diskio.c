@@ -1,6 +1,7 @@
 #include "ff.h"
 #include "diskio.h"
 #include "w25qxx.h"
+#include "rtc.h"
 
 #define FLASH_SECTOR_SIZE   512
 #define FLASH_BLOCK_SIZE    8
@@ -84,8 +85,15 @@ DRESULT disk_ioctl(
     return res;
 }
 
+static calendar_t calendar;
 DWORD get_fattime(void) {
-    return 0;
+    rtc_get_time(&calendar);
+    return ((DWORD) (calendar.year - 1980) << 25)
+        | ((DWORD) (calendar.month) << 21)
+        | ((DWORD) (calendar.date) << 16)
+        | ((DWORD) (calendar.hour) << 11)
+        | ((DWORD) (calendar.min) << 5)
+        | ((DWORD) (calendar.sec) >> 1);
 }
 
 void *ff_memalloc(      /* Returns pointer to the allocated memory block (null if not enough core) */
