@@ -15,11 +15,12 @@ void task1(void *pvParameters) {
         delayms(1000);
         LED_TOGGLE();
 
-        /* Used to trigger hardware error to test if hardfault back tracking is working */
-//        static const uint32_t s_keys[32];
-//        uint32_t value =
-//            s_keys[((global_system_time_stamp % 10 + 1) & 0x0000001F)] ^ (*(uint32_t *) global_system_time_stamp);
-//        printf("value: %d\r\n", value);
+        /* Used to trigger hardware error to test if hardfault back tracking is working
+         * Comment out the following code for normal operation  */
+        static const uint32_t s_keys[32];
+        uint32_t value =
+            s_keys[((global_system_time_stamp % 10 + 1) & 0x0000001F)] ^ (*(uint32_t *) global_system_time_stamp);
+        printf("value: %d\r\n", value);
     }
 }
 
