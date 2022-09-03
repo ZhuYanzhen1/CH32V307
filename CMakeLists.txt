@@ -28,9 +28,9 @@ add_compile_options(-O2)
 add_link_options(-nostartfiles -Xlinker --gc-sections -Wl,--print-memory-usage,-Map,${PROJECT_BINARY_DIR}/${PROJECT_NAME}.map)
 add_link_options(--specs=nano.specs --specs=nosys.specs -march=rv32imafc -mabi=ilp32f -flto)
 
-include_directories(system user library/inc freertos hardware device)
+include_directories(system user library/inc freertos hardware device fatfs)
 file(GLOB_RECURSE SOURCES "system/startup_ch32v30x.s" "system/*.c" "library/src/*.c" "user/*.c" "freertos/*.c"
-        "freertos/portasm.s" "hardware/*.c" "device/*.c")
+        "freertos/portasm.s" "hardware/*.c" "device/*.c" "fatfs/*.c")
 
 set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/system/linkscript.ld)
 add_link_options(-T ${LINKER_SCRIPT})
