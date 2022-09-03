@@ -212,9 +212,10 @@ void *_sbrk(ptrdiff_t incr) {
 
 void print_system_information(void) {
 #if (PRINT_DEBUG_LEVEL == 3)
-    unsigned int rst_reason = RCC->RSTSCKR, flash_size = *((volatile unsigned int *) 0x1FFFF7E0UL);
+    unsigned int rst_reason = RCC->RSTSCKR;
     unsigned int chip_uid1 = *((volatile unsigned int *) 0x1FFFF7E8UL);
     unsigned int chip_uid2 = *((volatile unsigned int *) 0x1FFFF7ECUL);
+    unsigned int opt_byte_reg = *((volatile unsigned int *) 0x4002201CUL);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_PWR | RCC_APB1Periph_BKP, ENABLE);
     PWR_BackupAccessCmd(ENABLE);
 #endif
@@ -229,7 +230,7 @@ void print_system_information(void) {
     for (unsigned char counter = 0; counter < 25; ++counter)
         if (((misa_value >> counter) & 0x00000001UL) == 1)
             _putchar((char) (65 + counter));
-    printf("\tReset Reason: ");
+    printf("\tReset reason: ");
     if (((rst_reason << 4) & 0x80000000UL) == 0) {
         for (unsigned char counter = 0; counter < 6; ++counter) {
             if (((rst_reason << counter) & 0x80000000UL) != 0) {
@@ -264,7 +265,17 @@ void print_system_information(void) {
     printf("\tFreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
     printf("Program git version: %s", GIT_HASH);
     printf("\tCompiled time: %s\r\n", compile_date_time);
-    printf("Chip flash size: %dKB", flash_size & 0x0000ffffUL);
+    printf("SRAM mode: ");
+    switch ((opt_byte_reg & 0x00000300UL) >> 8) {
+        case 0:printf("192KB + 128KB");
+            break;
+        case 1:printf("224KB + 96KB");
+            break;
+        case 2:printf("256KB + 64KB");
+            break;
+        case 3:printf("288KB + 32KB");
+            break;
+    }
     printf("\t\tUnique ID: %08X%08X\r\n", chip_uid1, chip_uid2);
     printf("%s\r\n", LOG_RESET_COLOR);
 #endif

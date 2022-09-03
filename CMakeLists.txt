@@ -40,9 +40,9 @@ set(LINKER_SCRIPT ${CMAKE_SOURCE_DIR}/system/linkscript.ld)
 add_link_options(-T ${LINKER_SCRIPT})
 
 add_custom_target(version_h BYPRODUCTS "${CMAKE_CURRENT_BINARY_DIR}/../system/version.h"
-        COMMAND ${CMAKE_COMMAND}
-        -D SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}"
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake)
+        COMMAND ${CMAKE_COMMAND} -D SRCDIR="${CMAKE_CURRENT_SOURCE_DIR}"
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/gitversion.cmake
+        COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/system/system.c)
 
 add_executable(${PROJECT_NAME}.elf ${SOURCES} ${LINKER_SCRIPT})
 target_link_libraries(${PROJECT_NAME}.elf m)
@@ -53,9 +53,6 @@ add_custom_target(download_program
         -c "tcl_port disabled" -c "gdb_port disabled" -c "tcl_port disabled" -c init -c halt
         -c "program $<TARGET_FILE:${PROJECT_NAME}.elf>" -c wlink_reset_resume -c exit
         COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/open_putty.bat ${DEBUG_SERIAL_PORT} ${DEBUG_SERIAL_BAUDRATE})
-
-add_custom_command(TARGET ${PROJECT_NAME}.elf download_program PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E touch_nocreate ${CMAKE_CURRENT_SOURCE_DIR}/system/system.c)
 
 set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
