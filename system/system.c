@@ -130,6 +130,7 @@ void initialize_task(void *pvParameters) {
 #endif
     system_rng_bkp_config();
     led_config();
+    key_config();
     at24c02_config();
     w25qxx_config();
     rtc_config();

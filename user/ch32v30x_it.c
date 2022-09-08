@@ -21,3 +21,10 @@ __attribute__((unused)) void RTC_IRQHandler(void) {
     }
     RTC_WaitForLastTask();
 }
+
+__attribute__((unused)) void EXTI3_IRQHandler(void) {
+    if (EXTI_GetITStatus(EXTI_Line3) != RESET) {
+        PRINTF_LOGI("Key had been pushed!\r\n")
+        EXTI_ClearITPendingBit(EXTI_Line3);
+    }
+}

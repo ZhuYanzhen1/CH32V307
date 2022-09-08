@@ -13,5 +13,6 @@
 __attribute__((unused)) void NMI_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 __attribute__((unused)) void USART1_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 __attribute__((unused)) void RTC_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
+__attribute__((unused)) void EXTI3_IRQHandler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
 
 #endif /* __CH32V30x_IT_H */
