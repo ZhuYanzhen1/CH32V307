@@ -5,9 +5,11 @@
 * Date               : 2021/06/06
 * Description        : This file contains all the functions prototypes for the FLASH  
 *                      firmware library.
+*********************************************************************************
 * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* SPDX-License-Identifier: Apache-2.0
-*******************************************************************************/ 
+* Attention: This software (modified or not) and binary are used for 
+* microcontroller manufactured by Nanjing Qinheng Microelectronics.
+*******************************************************************************/
 #ifndef __CH32V30x_FLASH_H
 #define __CH32V30x_FLASH_H
 
@@ -85,13 +87,11 @@ typedef enum
 /* FLASH_Flags */	
 #define FLASH_FLAG_BSY                 ((uint32_t)0x00000001)  /* FLASH Busy flag */
 #define FLASH_FLAG_EOP                 ((uint32_t)0x00000020)  /* FLASH End of Operation flag */
-#define FLASH_FLAG_PGERR               ((uint32_t)0x00000004)  /* FLASH Program error flag */
 #define FLASH_FLAG_WRPRTERR            ((uint32_t)0x00000010)  /* FLASH Write protected error flag */
 #define FLASH_FLAG_OPTERR              ((uint32_t)0x00000001)  /* FLASH Option Byte error flag */
 
 #define FLASH_FLAG_BANK1_BSY                 FLASH_FLAG_BSY       /* FLASH BANK1 Busy flag*/
 #define FLASH_FLAG_BANK1_EOP                 FLASH_FLAG_EOP       /* FLASH BANK1 End of Operation flag */
-#define FLASH_FLAG_BANK1_PGERR               FLASH_FLAG_PGERR     /* FLASH BANK1 Program error flag */
 #define FLASH_FLAG_BANK1_WRPRTERR            FLASH_FLAG_WRPRTERR  /* FLASH BANK1 Write protected error flag */
 
 /* FLASH_Access_CLK */

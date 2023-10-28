@@ -138,12 +138,12 @@
 
 
 .macro portasmSAVE_ADDITIONAL_REGISTERS
-    /* No additional registers to save, so this macro does nothing. */
-    .endm
+/* No additional registers to save, so this macro does nothing. */
+.endm
 
 .macro portasmRESTORE_ADDITIONAL_REGISTERS
-    /* No additional registers to restore, so this macro does nothing. */
-    .endm
+/* No additional registers to restore, so this macro does nothing. */
+.endm
 
 #endif
 

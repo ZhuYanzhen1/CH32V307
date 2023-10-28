@@ -1,8 +1,6 @@
 #include "system.h"
 #include "main.h"
 
-const char compile_date_time[] = __TIMESTAMP__;
-
 static TaskHandle_t initialize_task_handler;
 
 __attribute__((unused)) void HardFault_Handler(void) __attribute__((interrupt("WCH-Interrupt-fast")));
@@ -54,7 +52,7 @@ __attribute__((unused)) void HardFault_Handler(void) {
     PRINTF_LOGE("Current Task: %s, dumping register data\r\n", pcTaskGetName(xTaskGetCurrentTaskHandle()))
     PRINTF_LOGE("mpec: 0x%08X    mcause: 0x%08X    mtval: 0x%08X\r\n\r\n", mepc, mcause, mtval)
     PRINTF_LOGE("Run command to find error line:\r\n")
-    PRINTF_LOGE("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_PATH, mepc)
+    PRINTF_LOGE("%saddr2line.exe -e %s -f 0x%x -a -p\r\n", TOOLCHAIN_PATH, PROJECT_ELF_PATH, mepc)
     while (1)
         IWDG_ReloadCounter();
 }
@@ -163,6 +161,8 @@ static void system_timer6_config() {
 
 int main(void) {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+    portDISABLE_INTERRUPTS();
+    SystemCoreClockUpdate();
     system_timer6_config();
     usart1_config(DEBUG_SERIAL_BAUDRATE);
     print_system_information();
@@ -236,27 +236,28 @@ void print_system_information(void) {
         for (unsigned char counter = 0; counter < 6; ++counter) {
             if (((rst_reason << counter) & 0x80000000UL) != 0) {
                 switch (counter) {
-                    case 0:printf("Low power reset");
+                    case 0:printf("Low power ");
                         break;
-                    case 1:printf("Window watchdog reset");
+                    case 1:printf("Window watchdog ");
                         BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) + 1);
                         break;
-                    case 2:printf("Independent watchdog reset");
+                    case 2:printf("Independent watchdog ");
                         BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) + 1);
                         break;
-                    case 3:printf("Software reset");
+                    case 3:printf("Software ");
                         BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) & 0xFF00);
                         break;
-                    case 4:printf("Power-on reset");
+                    case 4:printf("Power-on ");
                         break;
-                    case 5:printf("External reset");
+                    case 5:printf("External ");
                         BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) & 0xFF00);
                         break;
-                    default:printf("Unknown reset");
+                    default:printf("Unknown ");
                         break;
                 }
             }
         }
+        printf("reset");
     } else {
         printf("Power-on reset");
         BKP_WriteBackupRegister(BKP_DR1, BKP_ReadBackupRegister(BKP_DR1) & 0xFF00);
@@ -264,8 +265,9 @@ void print_system_information(void) {
     RCC->RSTSCKR = RCC->RSTSCKR | 0x01000000UL;
     printf("\r\nSystem clock frequency: %dMHz", (SystemCoreClock / 1000000));
     printf("\tFreeRTOS kernel version: %s\r\n", tskKERNEL_VERSION_NUMBER);
-    printf("Program git version: %s", GIT_HASH);
-    printf("\tCompiled time: %s\r\n", compile_date_time);
+    printf("Program git version: %s", GIT_COMMIT_HASH);
+    printf("\tCompiled time: %s\r\n", FIRMWARE_BUILD_TIME);
+    printf("Compiled toolchain: GCC %s\r\n", GCC_VERSION_MAJOR);
     printf("SRAM mode: ");
     switch ((opt_byte_reg & 0x00000300UL) >> 8) {
         case 0:printf("192KB + 128KB");

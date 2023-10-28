@@ -89,7 +89,7 @@ void fs_config(void) {
         if (f_mkfs("0:", 0, fs_buffer, sizeof(fs_buffer)) == FR_OK) {
             f_setlabel((const TCHAR *) "0:FLASH");
             f_mount(&filesystem, "0:", 1);
-            PRINTF_LOGI("File system not detected, making file system success\r\n")
+            PRINTF_LOGW("File system not detected, making file system success\r\n")
             goto test_file_system_access;
         } else {
             PRINTF_LOGE("File system not detected, making file system failed\r\n")

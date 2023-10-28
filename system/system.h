@@ -4,7 +4,7 @@
 #include "printf.h"
 #include "ch32v30x.h"
 #include "config.h"
-#include "gitver.h"
+#include "version.h"
 
 #define LOG_COLOR_RED     "31"
 #define LOG_COLOR_GREEN   "32"
@@ -36,7 +36,6 @@
 #define ASSERT_FAILED()             while(1);
 #endif
 
-extern const char compile_date_time[];
 extern unsigned int global_system_time_stamp;
 
 void delayus(uint32_t xus);
